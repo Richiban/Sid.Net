@@ -9,13 +9,13 @@ namespace Sid.Net.Benchmarks;
 public class SidBenchmarks
 {
     [Benchmark(Baseline = true)]
-    public void BenchmarkCreate()
+    public void Create()
     {
         var s = Sid.Create();
     }
 
     [Benchmark]
-    public void BenchmarkCreateWithPrefix()
+    public void CreateWithPrefix()
     {
         var s = Sid.Create("DC.");
     }

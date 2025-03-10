@@ -5,6 +5,26 @@ namespace Sid.Net;
 public class SidTests(ITestOutputHelper output)
 {
     [Fact]
+    public void A()
+    {
+        var timestampA = DateTimeOffset.UtcNow - DateTimeOffset.UnixEpoch;
+        var timestamp = timestampA.Ticks;
+        var a = DateTimeOffset.UtcNow.Ticks;
+        output.WriteLine("Timestamp: {0}", timestamp);
+        // for (var (v, i) = (timestamp, bufferIndex + TimestampCharCount - 1); v > 0; v /= Radix, i--)
+        // {
+        //     var digit = (int)(v % Radix);
+        //
+        //     buffer[i] = digit switch
+        //     {
+        //         < 10 => (char)('0' + digit),
+        //         < 36 => (char)('A' + (digit - 10)),
+        //         _ => (char)('a' + (digit - 36))
+        //     };
+        // }
+    }
+
+    [Fact]
     public void OutputLength()
     {
         var sid = Sid.Create();
@@ -66,16 +86,7 @@ public class SidTests(ITestOutputHelper output)
     [Fact]
     public void SortOrder()
     {
-        var sids = Enumerable
-            .Range(0, 100)
-            .Select(
-                _ =>
-                {
-                    Thread.Sleep(2);
-
-                    return Sid.Create();
-                })
-            .ToList();
+        var sids = Enumerable.Range(0, 100).Select(_ => Sid.Create()).ToList();
 
         sids.ShouldBe(sids.OrderBy(sid => sid, StringComparer.Ordinal));
     }
@@ -90,8 +101,20 @@ public class SidTests(ITestOutputHelper output)
 
         parsed.ShouldSatisfyAllConditions(
             it => it.Timestamp.ShouldBe(originalTimestamp),
-            it => it.RandomChars.Length.ShouldBe(16),
-            it => it.Prefix.ShouldBeEmpty());
+            it => it.RandomChars.Length.ShouldBe(14),
+            it => it.Prefix.ShouldBeEmpty(),
+            it => it.Counter.ShouldBe(0));
+    }
+
+    [Fact]
+    public void ParseTwiceIncrementsCounter()
+    {
+        var originalTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var parsed1 = Sid.Parse(Sid.Create(originalTimestamp));
+        var parsed2 = Sid.Parse(Sid.Create(originalTimestamp));
+
+        parsed1.Counter.ShouldBe(0);
+        parsed2.Counter.ShouldBe(1);
     }
 
     [Fact]
@@ -105,7 +128,8 @@ public class SidTests(ITestOutputHelper output)
 
         parsed.ShouldSatisfyAllConditions(
             it => it.Timestamp.ShouldBe(originalTimestamp),
-            it => it.RandomChars.Length.ShouldBe(16),
-            it => it.Prefix.ShouldBe(['A', 'B', '.']));
+            it => it.RandomChars.Length.ShouldBe(14),
+            it => it.Prefix.ShouldBe(['A', 'B', '.']),
+            it => it.Counter.ShouldBe(0));
     }
 }

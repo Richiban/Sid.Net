@@ -71,3 +71,5 @@ Sid.NET is extremely fast, taking less than 300ns on a dev laptop to generate a 
 ## Caveats
 
 Since it's possible for mulitple SIDs to be created in the same millisecond, a counter is included in the SID to ensure that each SID is unique. The counter is a base62-encoded number that is incremented (in a thread-safe way) each time a new SID is created in the same millisecond. The counter has two characters, allowing for 3844 SIDs to be created in the same millisecond whilst remaining sortable. Creating more SIDs per millisecond will work, but they will not order correctly as the counter will overflow.
+
+Also, it may be stating the obvious, but ordering of SIDs requires that the datetime of the host machine(s) is configured correctly.
